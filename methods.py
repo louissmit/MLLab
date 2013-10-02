@@ -26,9 +26,8 @@ def logreg_gradient(x, t, W, b):
     grad_b = np.zeros(J)
     grad_W = np.zeros((M,J))
     # compute Z
-    Z=0
+    Z = sum(np.exp(np.dot(W.T, x) + b))
     for j in xrange(J):
-        Z+=np.exp(np.dot(W[:,j].T, x) + b[j])
         # compute grad_b
         grad_b[j]=-np.exp(np.dot(W[:,j].T, x) + b[j])
     grad_b = grad_b / Z
@@ -36,7 +35,7 @@ def logreg_gradient(x, t, W, b):
 
     for j in xrange(J):
         # compute grad_W
-        grad_W[:,j]=x*grad_b[j]
+        grad_W[:,j]= x * grad_b[j]
         
     return grad_b, grad_W
 
