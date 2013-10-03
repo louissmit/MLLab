@@ -28,8 +28,7 @@ def logreg_gradient(x, t, W, b):
     grad_b = -np.exp(np.dot(W.T, x) + b) / Z
     grad_b[t]+=1
 
-    xtile = np.tile(x, (J, 1)).T
-    grad_W = np.dot(xtile, np.diag(grad_b))
+    grad_W = np.outer(x, grad_b.T) 
 
     return grad_b, grad_W
 
@@ -37,11 +36,11 @@ def sgd_iter(x_train, t_train, W, b):
     M,J=W.shape
     N,M=x_train.shape
     eta = 1E-4 #learning_rate
-    #indices = np.arange(N,  dtype = int)
-    #np.random.shuffle(indices)
+    indices = np.arange(N,  dtype = int)
+    np.random.shuffle(indices)
 
     # stochatic gradient decent
-    for n in xrange(N):#indices:
+    for n in indices:
         grad_b, grad_W = logreg_gradient(x_train[n],t_train[n],W,b)
         b+= eta*grad_b 
         W+= eta*grad_W

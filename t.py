@@ -21,26 +21,26 @@ W = np.zeros((M,J))
 def logreg_gradient(x, t, W, b):
     M,J=W.shape
 
-    Z = sum(np.exp(np.dot(W.T, x) + b))
+    Z = np.sum(np.exp(np.dot(W.T, x) + b))
 
     grad_b = -np.exp(np.dot(W.T, x) + b) / Z
     grad_b[t]+=1
 
-    xtile = np.tile(x, (J, 1)).T
-    grad_W = np.dot(xtile, np.diag(grad_b))
+    grad_W = np.outer(x, grad_b.T)
 
     return grad_b, grad_W
 
 def logreg_gradient2(x, t, W, b):
     M,J=W.shape
 
-    Z = np.sum(np.exp(np.dot(W.T, x) + b))
+    WT = W.T
 
-    grad_b = -np.exp(np.dot(W.T, x) + b) / Z
+    Z = np.sum(np.exp(np.dot(WT, x) + b))
+
+    grad_b = -np.exp(np.dot(WT, x) + b) / Z
     grad_b[t]+=1
 
-    xtile = np.tile(x, (J, 1)).T
-    grad_W = np.dot(xtile, np.diag(grad_b))
+    grad_W = np.outer(x, grad_b.T)
 
     return grad_b, grad_W
 
@@ -50,12 +50,14 @@ import time
 
 I = 10    
 
+m = N
+
 t0a = time.clock()
-for n in xrange(N):
+for n in xrange(m):
     logreg_gradient(x_train[n],t_train[n],W,b)
 print "old time: ", time.clock() - t0a
 
 t0b = time.clock()
-for n in xrange(N):
+for n in xrange(m):
     logreg_gradient2(x_train[n],t_train[n],W,b)
 print "new time: ", time.clock() - t0b
