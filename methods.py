@@ -28,8 +28,7 @@ def logreg_gradient(x, t, W, b):
     grad_b = -np.exp(np.dot(W.T, x) + b) / Z
     grad_b[t]+=1
 
-    xtile = np.tile(x, (J, 1)).T
-    grad_W = np.dot(xtile, np.diag(grad_b))
+    grad_W = np.outer(x, grad_b.T)
 
     return grad_b, grad_W
 
