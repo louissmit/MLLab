@@ -10,30 +10,33 @@ import matplotlib.pyplot as plt
 def showProb():
     #initilaize W and b
     N, M = x_train.shape
+    K, L = x_valid.shape
     J = 10
     b = np.zeros(J)
     W = np.zeros((M,J))
 
     iterations = 10
-    res = np.zeros(iterations)
+    trainres = np.zeros(iterations)
+    valres = np.zeros(iterations)
     for i in xrange(iterations):
         W, b = sgd_iter(x_train, t_train, W, b)
-        Z = 0
-        logq = 0
         lntrainp = 0
+        lnvalidp = 0
         for n in xrange(N):
             lnq = np.dot(W[:,t_train[n]].T, x_train[n]) + b[t_train[n]]
             lnZ = np.log(sum(np.exp(np.dot(W.T, x_train[n]) + b)))
 
-            # vallnq = np.dot(W[:,t_valid[n]].T, x_valid[:, n]) + b[t_valid[n]]
-            # vallnZ = np.log(sum(np.exp(np.dot(W.T, x_valid[:, n]) + b)))
+            # if(n < K):
+            #     vallnq = np.dot(W[:,t_valid[n]].T, x_valid[n]) + b[t_valid[n]]
+            #     vallnZ = np.log(sum(np.exp(np.dot(W.T, x_valid[n]) + b)))
 
             lntrainp += lnq - lnZ
-            # lnvalp += vallnq - vallnZ
-        res[i] = lntrainp
+            # lnvalidp += vallnq - vallnZ
+        trainres[i] = lntrainp / N
+        # valres[i] = lnvalidp / K
 
-    # plt.plot(valprob, label='validation prob.'))
-    plt.plot(res, label='train prob.')
+    plt.plot(trainres, label='train prob.')
+    # plt.plot(valres, label='validation prob.')
     plt.legend()
     plt.show()
 

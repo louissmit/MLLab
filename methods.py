@@ -22,21 +22,15 @@ def plot_digits(data, numcols, shape=(28,28)):
 
 def logreg_gradient(x, t, W, b):
     M,J=W.shape
-    N=x.shape
-    grad_b = np.zeros(J)
-    grad_W = np.zeros((M,J))
-    # compute Z
+
     Z = sum(np.exp(np.dot(W.T, x) + b))
-    for j in xrange(J):
-        # compute grad_b
-        grad_b[j]=-np.exp(np.dot(W[:,j].T, x) + b[j])
-    grad_b = grad_b / Z
+
+    grad_b = -np.exp(np.dot(W.T, x) + b) / Z
     grad_b[t]+=1
 
-    for j in xrange(J):
-        # compute grad_W
-        grad_W[:,j]= x * grad_b[j]
-        
+    xtile = np.tile(x, (J, 1)).T
+    grad_W = np.dot(xtile, np.diag(grad_b))
+
     return grad_b, grad_W
 
 def sgd_iter(x_train, t_train, W, b):
