@@ -21,19 +21,18 @@ def plot_digits(data, numcols, shape=(28,28)):
 
 
 def logreg_gradient(x, t, W, b):
-    M,J=W.shape
+    """ grad_b = delta(t,i) -logq / Z ; grad_w = x_i grad_b """    
+    
+    logq = np.exp(np.dot(W.T, x) + b)
 
-    Z = sum(np.exp(np.dot(W.T, x) + b))
+    grad_b = - logq / sum(logq) 
+    grad_b[t] += 1
 
-    grad_b = -np.exp(np.dot(W.T, x) + b) / Z
-    grad_b[t]+=1
-
-    grad_W = np.outer(x, grad_b.T) 
+    grad_W = np.outer(x, grad_b.T)
 
     return grad_b, grad_W
 
 def sgd_iter(x_train, t_train, W, b):
-    M,J=W.shape
     N,M=x_train.shape
     eta = 1E-4 #learning_rate
     indices = np.arange(N,  dtype = int)

@@ -19,26 +19,24 @@ b = np.zeros(J)
 W = np.zeros((M,J))
 
 def logreg_gradient(x, t, W, b):
-    M,J=W.shape
+    #M,J=W.shape
 
-    Z = np.sum(np.exp(np.dot(W.T, x) + b))
+    logq = np.exp(np.dot(W.T, x) + b)
 
-    grad_b = -np.exp(np.dot(W.T, x) + b) / Z
-    grad_b[t]+=1
+    grad_b = - logq / sum(logq) # -logq / Z
+    grad_b[t] += 1
 
     grad_W = np.outer(x, grad_b.T)
 
     return grad_b, grad_W
 
 def logreg_gradient2(x, t, W, b):
-    M,J=W.shape
+    #M,J=W.shape
 
-    WT = W.T
+    logq = np.exp(np.dot(W.T, x) + b)
 
-    Z = np.sum(np.exp(np.dot(WT, x) + b))
-
-    grad_b = -np.exp(np.dot(WT, x) + b) / Z
-    grad_b[t]+=1
+    grad_b = - logq / sum(logq) # -logq / Z
+    grad_b[t] += 1
 
     grad_W = np.outer(x, grad_b.T)
 
