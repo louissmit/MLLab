@@ -23,7 +23,7 @@ def plot_digits(data, numcols, shape=(28,28)):
 def logreg_gradient(x, t, W, b):
     M,J=W.shape
 
-    Z = sum(np.exp(np.dot(W.T, x) + b))
+    Z = np.sum(np.exp(np.dot(W.T, x) + b))
 
     grad_b = -np.exp(np.dot(W.T, x) + b) / Z
     grad_b[t]+=1
