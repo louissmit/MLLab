@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 # plot_digits(x_train[0:8], numcols=4)
 
 
+
+
 # some iterations
 def showProb():
     #initilaize W and b
