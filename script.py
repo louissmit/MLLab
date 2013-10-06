@@ -3,10 +3,6 @@ import matplotlib.pyplot as plt
 
 # load data
 (x_train, t_train), (x_valid, t_valid), (x_test, t_test) = load_mnist()
-# plot_digits(x_train[0:8], numcols=4)
-
-
-
 
 # some iterations
 def showProb(iterations=7):
@@ -85,10 +81,7 @@ def getHardestOrEasiest(hardest):
 
     res = sorted(lnvalidp, key=lnvalidp.get)
     R = np.zeros((8, M))
-    print(res[-8:])
-    print(res[0:8])
     for x in xrange(8):
-        print(x)
         if hardest:
             R[x] = x_valid[res[x]].T
         else:
@@ -115,7 +108,7 @@ def perceptron():
     W = np.zeros((L,J))
     V = np.zeros((M,L))
 
-    iterations = 7
+    iterations = 2
     trainres = np.zeros(iterations)
     valres = np.zeros(iterations)
     for i in xrange(iterations):
@@ -144,11 +137,3 @@ def perceptron():
 # getHardestOrEasiest(True)
 perceptron()
 
-
-    # prediction with x_test and t_test
-    # calculate error_test
-    # prediction with x_valid and t_valid
-    # calculate error_valid
-    # plot error of training/ validation
-    
-    # Visulaze W, W[:,j] is one image
