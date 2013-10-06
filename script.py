@@ -43,17 +43,25 @@ def showProb():
     plt.show()
 
 
-def visualizeW():
+def visualizeW(iterations, W0=None, b0=None):
+    """ Calculates "iterations" iterations starting from all null parameters but if W0 and b0 are given, starts from there. """
     #initilaize W and b
-    N, M = x_train.shape
-    J = 10
-    b = np.zeros(J)
-    W = np.zeros((M,J))
 
-    for i in xrange(8):
+    if W0 != None and b0 != None:
+        W = W0
+        b = b0
+    else:
+        N, M = x_train.shape
+        J = 10
+        b = np.zeros(J)
+        W = np.zeros((M,J))
+
+    for i in xrange(iterations):
         W, b = sgd_iter(x_train, t_train, W, b)
 
     plot_digits(W.T, numcols=5)
+    
+    return W,b
 
 def getHardestOrEasiest(hardest):
     #initilaize W and b
