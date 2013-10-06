@@ -55,7 +55,7 @@ def percept_gradient(x, t, W, V, b, a):
 
     # second backward pass
     # delta_h
-    delta_h = W[:,t] - sum(W * np.exp(np.dot(W.T, x) + b))/sum(np.exp(np.dot(W.T, x_valid[n]) + b))
+    delta_h = W[:,t] - sum(W * np.exp(np.dot(W.T, x) + b))/sum(np.exp(np.dot(W.T, x) + b))
     grad_a = delta_h * h * (1 - h)
     grad_V = np.outer(x, grad_a.T)
 

@@ -110,10 +110,10 @@ def perceptron():
     K, L = x_valid.shape
     L = 800
     J = 10
-    b = np.zeros(J)
-    a = np.zeros(L)
-    W = np.zeros((M,J))
-    V = np.zeros((M,L))
+    b = np.zeros(L)
+    a = np.zeros(J)
+    W = np.zeros((M,L))
+    V = np.zeros((M,J))
 
     iterations = 7
     trainres = np.zeros(iterations)
