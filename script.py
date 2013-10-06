@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 # some iterations
-def showProb():
+def showProb(iterations=7):
     #initilaize W and b
     N, M = x_train.shape
     K, L = x_valid.shape
@@ -17,7 +17,7 @@ def showProb():
     b = np.zeros(J)
     W = np.zeros((M,J))
 
-    iterations = 7
+    
     trainres = np.zeros(iterations)
     valres = np.zeros(iterations)
     for i in xrange(iterations):
@@ -27,19 +27,20 @@ def showProb():
         for n in xrange(N):
             lnq = np.dot(W[:,t_train[n]].T, x_train[n]) + b[t_train[n]]
             lnZ = np.log(sum(np.exp(np.dot(W.T, x_train[n]) + b)))
+            lntrainp += lnq - lnZ
 
             if(n < K):
                 vallnq = np.dot(W[:,t_valid[n]].T, x_valid[n]) + b[t_valid[n]]
                 vallnZ = np.log(sum(np.exp(np.dot(W.T, x_valid[n]) + b)))
-
-            lntrainp += lnq - lnZ
-            lnvalidp += vallnq - vallnZ
+                lnvalidp += vallnq - vallnZ
+            
+            
         trainres[i] = lntrainp / N
         valres[i] = lnvalidp / K
 
     plt.plot(trainres, label='train prob.')
     plt.plot(valres, label='validation prob.')
-    plt.legend()
+    plt.legend(loc=4)
     plt.show()
 
 
