@@ -131,7 +131,7 @@ def perceptron():
     plt.legend()
     plt.show()
 # visualizeW()
-showProb()
+# showProb()
 # getHardestOrEasiest(True)
 
 
