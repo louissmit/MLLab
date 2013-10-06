@@ -119,7 +119,7 @@ def perceptron():
     trainres = np.zeros(iterations)
     valres = np.zeros(iterations)
     for i in xrange(iterations):
-        W, b = percept_iter(x_train, t_train, W, V, b, a)
+        W, b = percept_sgd_iter(x_train, t_train, W, V, b, a)
         lntrainp = 0
         lnvalidp = 0
         for n in xrange(N):
@@ -142,6 +142,7 @@ def perceptron():
 # visualizeW()
 # showProb()
 # getHardestOrEasiest(True)
+perceptron()
 
 
     # prediction with x_test and t_test
