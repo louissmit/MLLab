@@ -48,16 +48,14 @@ def percept_gradient(x, t, W, V, b, a):
     # feed forward
     h = 1 / (1 + np.exp(np.dot(V.T, x) + a))
     # first backward pass
-    print(W.T.shape)
-    print(h)
     logq = np.exp(np.dot(W.T, h) + b)
     grad_b = - logq / sum(logq) 
     grad_b[t] += 1
     grad_W = np.outer(h, grad_b.T)
 
     # second backward pass
-    # delta_h
-    delta_h = W[:,t] - sum(W * np.exp(np.dot(W.T, x) + b))/sum(np.exp(np.dot(W.T, x) + b))
+    print(W.shape)
+    delta_h = W[:,t] - sum(W * np.exp(np.dot(W.T, h) + b)) / sum(np.exp(np.dot(W.T, h) + b))
     grad_a = delta_h * h * (1 - h)
     grad_V = np.outer(x, grad_a.T)
 

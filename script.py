@@ -125,13 +125,13 @@ def perceptron():
         for n in xrange(N):
             lnq = np.dot(W[:,t_train[n]].T, x_train[n]) + b[t_train[n]]
             lnZ = np.log(sum(np.exp(np.dot(W.T, x_train[n]) + b)))
+            lntrainp += lnq - lnZ
 
             if(n < K):
                 vallnq = np.dot(W[:,t_valid[n]].T, x_valid[n]) + b[t_valid[n]]
                 vallnZ = np.log(sum(np.exp(np.dot(W.T, x_valid[n]) + b)))
+                lnvalidp += vallnq - vallnZ
 
-            lntrainp += lnq - lnZ
-            lnvalidp += vallnq - vallnZ
         trainres[i] = lntrainp / N
         valres[i] = lnvalidp / K
 
