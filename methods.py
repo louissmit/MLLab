@@ -46,8 +46,10 @@ def sgd_iter(x_train, t_train, W, b):
 
 def percept_gradient(x, t, W, V, b, a):
     # feed forward
-    h = 1 / 1 + np.exp(np.dot(V.T, x) + a)
+    h = 1 / (1 + np.exp(np.dot(V.T, x) + a))
     # first backward pass
+    print(W.T.shape)
+    print(h)
     logq = np.exp(np.dot(W.T, h) + b)
     grad_b = - logq / sum(logq) 
     grad_b[t] += 1

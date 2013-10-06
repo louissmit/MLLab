@@ -112,7 +112,7 @@ def perceptron():
     J = 10
     b = np.zeros(J)
     a = np.zeros(L)
-    W = np.zeros((M,J))
+    W = np.zeros((L,J))
     V = np.zeros((M,L))
 
     iterations = 7
