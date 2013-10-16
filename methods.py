@@ -83,7 +83,7 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, C = None):
             k[i] = k_n_m(X_test[n], X_train[i])
         mu[n] = np.dot(np.dot(k.T, Cinv, T_train)
         var[n] = c - np.dot(np.dot(k.T, Cinv, k)
-return mu, var
+    return mu, var
 
 def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
     D, N_train = X_train.shape
