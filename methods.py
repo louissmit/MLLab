@@ -81,22 +81,32 @@ def show_sample_kernels(N_test, mu_test, thetaset):
 #_________________________________________________________________________
 # Predictive distribution
 
-def gp_predictive_distribution(X_train, T_train, X_test, theta, C = None):
-    N_train = X_train.shape
-    N_test = X_test.shape
+def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None):
+    N_train = X_train.shape[0]
+    N_test = X_test.shape[0]
     mu = np.zeros(N_test)
     var = np.zeros(N_test)
+
+    beta = 1/float(sigma)
+    
     if not C:
         K = computeK(X_train, theta)
-        C = K + 0.01 * np.identity(N_train) #sigma?
-    Cinv=np.inverse(C)
+        # C = K + I_N / beta 
+        print N_train
+        print K.shape, "||",np.identity(N_train).shape,"wow"
+        
+        C = K + sigma * np.identity(N_train)  # beta = 1/sigma
+        
+    Cinv = np.linalg.inv(C)
     
+    # For each of the test points we calculate C_{N+1} and parameters mu & var.
     k = np.empty(N_train)
     for n in xrange(N_test):
-        c = k_n_m(X_test[i], X_test[i]) + 0.01  
+        c = k_n_m(X_test[n], X_test[n]) + (1/float(sigma))  
         
         for i in xrange(N_train):
             k[i] = k_n_m(X_test[n], X_train[i])
+            
         mu[n] = np.dot(np.dot(k.T, Cinv), T_train)
         var[n] = c - np.dot(np.dot(k.T, Cinv), k)
     return mu, var

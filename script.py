@@ -18,7 +18,7 @@ X_train, T_train, X_test, y_train = data_gen(N_train,N_test,sigma)
 # Predictive distribution
 
 
-mu, var = gp_predictive_distribution(X_train, T_train, X_test, theta[0])
+mu, var = gp_predictive_distribution(X_train, T_train, X_test, theta[0], sigma)
 gp_plot( X, y_train, mu, var, x_train, t_train, theta, beta )###needs to be edited tomorrow
 # ten data points
 
