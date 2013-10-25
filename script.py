@@ -19,13 +19,13 @@ X_train, T_train, X_test, y_train = data_gen(N_train,N_test,sigma)
 
 
 mu, var = gp_predictive_distribution(X_train, T_train, X_test, theta[0], sigma)
-gp_plot( X, y_train, mu, var, x_train, t_train, theta, beta )###needs to be edited tomorrow
+#gp_plot( X, y_train, mu, var, x_train, t_train, theta, beta )###needs to be edited tomorrow
 # ten data points
 
 
 #_________________________________________________________________________
 # Sampling from the Gaussian process prior
-show_sample_kernels(N_test,mu)
+show_sample_kernels(N_test, X_test, mu, 0)
 
 #_________________________________________________________________________
 # Learning the hyperparameters
@@ -34,7 +34,7 @@ show_sample_kernels(N_test,mu)
   
 K = computeK(X_train, theta[0])
 C = K + 0.01 * np.identity(N_train) 
-Cinv=np.inverse(C)
+Cinv=np.linalg.inv(C)
 
 theta_combinations = []
 
@@ -51,7 +51,7 @@ for t0 in theta0_values:
 
 likelihood_results = {}
 for combination in theta_combinations:
-    likelihood_results[combination] = gp_log_likelihood( X_train, T_train, theta, C = None, invC = None )
+    likelihood_results[combination], C, Cinv = gp_log_likelihood( X_train, T_train, theta[0], sigma, C = None, invC = None )
 
 print "sort-dictionary-thingy(...)"
 print "plot-results-KAREN :P:P(...)"

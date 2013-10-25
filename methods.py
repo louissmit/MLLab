@@ -47,7 +47,7 @@ def k_n_m(xn, xm, thetas):
     
     # Faster 1D implementation
     dnm = xn-xm
-    return thetas[0]*np.exp(-thetas[1]/2.0 * (dnm*dnm)) + thetas[2] + thetas[3]*(xn*xm)
+    return thetas[0]*np.exp(-0.5*thetas[1] * (dnm*dnm)) + thetas[2] + thetas[3]*(xn*xm)
 
 def computeK(X, thetas):
     N = X.shape[0]
@@ -59,7 +59,7 @@ def computeK(X, thetas):
 
     return K
 
-def show_sample_kernels(N_test, mu_test, thetaset):
+def show_sample_kernels(N_test, X_test, mu_test, thetaset):
     """ Still need to make the plot in a grid and then you can make thetaset choice disappear"""
     
     #TODO: Remove the parameter thetaset and use a subfig that iterates through all the thetasets. After that, finish the plotting with the requiremnents in the assignment.    
@@ -67,15 +67,15 @@ def show_sample_kernels(N_test, mu_test, thetaset):
     THETAS = np.array([[1,4,0,0], [9,4,0,0], [1,64,0,0], [1,0.25,0,0], [1,4,10,0], [1,4,0,5]])
     mean = np.zeros((N_test,1))
     
-    y_test = np.random.multivariate_normal(mu_test, computeK(x_test, THETAS[thetaset]), N_test)    
+    y_test = np.random.multivariate_normal(mu_test, computeK(X_test, THETAS[thetaset]), N_test)    
 
     
-    pp.plot(x_test,y_test[0])
-    pp.plot(x_test,y_test[1])
-    pp.plot(x_test,y_test[2])
-    pp.plot(x_test,y_test[3])
-    pp.plot(x_test,y_test[4])
-    pp.plot(x_test,y_test[5])
+    pp.plot(X_test,y_test[0])
+    pp.plot(X_test,y_test[1])
+    pp.plot(X_test,y_test[2])
+    pp.plot(X_test,y_test[3])
+    pp.plot(X_test,y_test[4])
+    pp.plot(X_test,y_test[5])
     pp.show()
 
 #_________________________________________________________________________
@@ -106,16 +106,17 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None)
         var[n] = c - np.dot(np.dot(k.T, Cinv), k)
     return mu, var
 
-def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
+def gp_log_likelihood( X_train, T_train, theta, sigma, C = None, invC = None ):
+    """ Returns the log-likelihood as well as C and C^-1 which can be reused. """
     N_train = X_train.shape[0]
     if not C:
         K = computeK(X_train, theta)
-        C = K + 0.01 * np.identity(N_train) #sigma?
+        C = K + sigma * np.identity(N_train)
     if not invC:
         Cinv=np.linalg.inv(C)
 
-    logLikelihood=-0.5*log(det(C))-0.5*np.dot(np.dot(T_train.T,Cinv),t)-N_train/2*log(2*pi)# possible errors: det()=determinate, log(), pi
-    return logLikelihood
+    logLikelihood=-0.5*(np.log(np.linalg.det(C)) + np.dot(np.dot(T_train.T,Cinv),T_train) + N_train*np.log(2*pi))
+    return logLikelihood, C, Cinv
 
 
 def gp_plot( x_test, y_test, mu_test, var_test, x_train, t_train, theta, beta ):
