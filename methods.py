@@ -40,7 +40,14 @@ def abs2(vec):
     return np.sum(vec*vec)
 
 def k_n_m(xn, xm, thetas):
-    return thetas[0]*np.exp(-thetas[1]/2.0 * abs2(xn-xm)) + thetas[2] + thetas[3]*np.dot(xn.T, xm)
+    """ Returns the Kernel element Knm """
+    
+    # This would be in a multi-dimensional case
+    #return thetas[0]*np.exp(-thetas[1]/2.0 * abs2(xn-xm)) + thetas[2] + thetas[3]*np.dot(xn.T, xm)
+    
+    # Faster 1D implementation
+    dnm = xn-xm
+    return thetas[0]*np.exp(-thetas[1]/2.0 * (dnm*dnm)) + thetas[2] + thetas[3]*(xn*xm)
 
 def computeK(X, thetas):
     N = X.shape[0]
@@ -48,18 +55,19 @@ def computeK(X, thetas):
 
     for n in xrange(N):
         for m in xrange(N):
-            K[n,m] = k_n_m(X[n], X[m], thetas)
+            K[n][m] = k_n_m(X[n], X[m], thetas)
 
     return K
 
-def show_sample_kernels(N_test, mu_test, thetaset_index):
-    """ Still need to make the plot in a grid and then you can make thetaset_index disappear"""
+def show_sample_kernels(N_test, mu_test, thetaset):
+    """ Still need to make the plot in a grid and then you can make thetaset choice disappear"""
+    
+    #TODO: Remove the parameter thetaset and use a subfig that iterates through all the thetasets. After that, finish the plotting with the requiremnents in the assignment.    
+    
     THETAS = np.array([[1,4,0,0], [9,4,0,0], [1,64,0,0], [1,0.25,0,0], [1,4,10,0], [1,4,0,5]])
     mean = np.zeros((N_test,1))
-
     
-    
-    y_test = np.random.multivariate_normal(mu_test, computeK(x_test, THETAS[thetaset_index]), N_test)    
+    y_test = np.random.multivariate_normal(mu_test, computeK(x_test, THETAS[thetaset]), N_test)    
 
     
     pp.plot(x_test,y_test[0])
@@ -74,8 +82,8 @@ def show_sample_kernels(N_test, mu_test, thetaset_index):
 # Predictive distribution
 
 def gp_predictive_distribution(X_train, T_train, X_test, theta, C = None):
-    D, N_train = X_train.shape
-    D, N_test =X_test.shape
+    N_train = X_train.shape
+    N_test = X_test.shape
     mu = np.zeros(N_test)
     var = np.zeros(N_test)
     if not C:
