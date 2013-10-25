@@ -1,5 +1,7 @@
 #_________________________________________________________________________
 # Libraries
+
+from math import pi as pi
 import numpy as np
 import matplotlib.pyplot as pp
 
@@ -14,7 +16,7 @@ def data_gen(N_train,N_test,sigma=None):
     T_train = generate_t( X_train, sigma)
     y_train = true_mean_function( X_train)
 
-return X_train, T_train, X_test, y_train
+    return X_train, T_train, X_test, y_train
 
 def true_mean_function( x ):
     return np.sin( 2*pi*(x+1) )
@@ -50,11 +52,16 @@ def computeK(X, thetas):
 
     return K
 
-def show_sample_kernels():
+def show_sample_kernels(N_test, mu_test, thetaset_index):
+    """ Still need to make the plot in a grid and then you can make thetaset_index disappear"""
     THETAS = np.array([[1,4,0,0], [9,4,0,0], [1,64,0,0], [1,0.25,0,0], [1,4,10,0], [1,4,0,5]])
     mean = np.zeros((N_test,1))
-    y_test = np.random.multivariate_normal(mu_test, computeK(x_test, THETAS[5]), N_test)    
 
+    
+    
+    y_test = np.random.multivariate_normal(mu_test, computeK(x_test, THETAS[thetaset_index]), N_test)    
+
+    
     pp.plot(x_test,y_test[0])
     pp.plot(x_test,y_test[1])
     pp.plot(x_test,y_test[2])
@@ -78,11 +85,12 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, C = None):
     
     k = np.empty(N_train)
     for n in xrange(N_test):
-        c = k_n_m(X_test[i], X_test[i]) + 0.01    
+        c = k_n_m(X_test[i], X_test[i]) + 0.01  
+        
         for i in xrange(N_train):
             k[i] = k_n_m(X_test[n], X_train[i])
-        mu[n] = np.dot(np.dot(k.T, Cinv, T_train)
-        var[n] = c - np.dot(np.dot(k.T, Cinv, k)
+        mu[n] = np.dot(np.dot(k.T, Cinv), T_train)
+        var[n] = c - np.dot(np.dot(k.T, Cinv), k)
     return mu, var
 
 def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
@@ -93,7 +101,7 @@ def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
     if not invC:
         Cinv=np.inverse(C)
 
-    logLikelihood=-0.5 log(det(C))-0.5*np.dot(np.dot(T_train.T,Cinv),t)-N_train/2*log(2*pi)# possible errors: det()=determinate, log(), pi
+    logLikelihood=-0.5*log(det(C))-0.5*np.dot(np.dot(T_train.T,Cinv),t)-N_train/2*log(2*pi)# possible errors: det()=determinate, log(), pi
     return logLikelihood
 
 
@@ -116,30 +124,5 @@ def gp_plot( x_test, y_test, mu_test, var_test, x_train, t_train, theta, beta ):
     pp.fill_between( x_test, mu_test+2*std_combo,mu_test-2*std_combo, color='k', alpha=0.25 )
     pp.fill_between( x_test, mu_test+2*std_model,mu_test-2*std_model, color='r', alpha=0.25 )
     pp.plot( x_train, t_train, 'ro', ms=10 )
-#_________________________________________________________________________
-# Learning the hyperparameters
-K = computeK(X_train, theta)
-C = K + 0.01 * np.identity(N_train) 
-Cinv=np.inverse(C)
-
-theta_combinations = []
-
-theta0_values = [0,1,3]
-theta1_values = [0,1,3]
-theta2_values = [0,1,3]
-theta3_values = [0,1,3]
-
-for t0 in theta0_values:
-    for t1 in theta1_values:
-        for t2 in theta2_values:
-            for t3 in theta3_values:
-                    theta_combinations.append( (t0,t1,t2,t3) )
-
-likelihood_results = {}
-for combination in theta_combinations:
-    likelihood_results[combination] = gp_log_likelihood( X_train, T_train, theta, C = None, invC = None )
-
-sort-dictionary-thingy(...)
-plot-results-KAREN :P:P(...)
 
 #_________________________________________________________________________
