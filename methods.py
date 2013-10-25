@@ -86,15 +86,10 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None)
     N_test = X_test.shape[0]
     mu = np.zeros(N_test)
     var = np.zeros(N_test)
-
-    beta = 1/float(sigma)
     
     if not C:
         K = computeK(X_train, theta)
-        # C = K + I_N / beta 
-        print N_train
-        print K.shape, "||",np.identity(N_train).shape,"wow"
-        
+        # C = K + I_N / beta        
         C = K + sigma * np.identity(N_train)  # beta = 1/sigma
         
     Cinv = np.linalg.inv(C)
@@ -102,10 +97,10 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None)
     # For each of the test points we calculate C_{N+1} and parameters mu & var.
     k = np.empty(N_train)
     for n in xrange(N_test):
-        c = k_n_m(X_test[n], X_test[n]) + (1/float(sigma))  
+        c = k_n_m(X_test[n], X_test[n], theta) + (1/float(sigma))  # k(x_n+1,x_n+1) + beta
         
         for i in xrange(N_train):
-            k[i] = k_n_m(X_test[n], X_train[i])
+            k[i] = k_n_m(X_test[n], X_train[i], theta)
             
         mu[n] = np.dot(np.dot(k.T, Cinv), T_train)
         var[n] = c - np.dot(np.dot(k.T, Cinv), k)
