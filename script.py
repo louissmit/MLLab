@@ -33,28 +33,45 @@ show_sample_kernels(N_test, X_test, mu, 0)
 
   
 K = computeK(X_train, theta[0])
-C = K + sigma * np.identity(N_train) 
+C = computeC(K, sigma) 
 Cinv=np.linalg.inv(C)
 
-theta_combinations = []
+#....
 
-theta0_values = [0,1,3]
-theta1_values = [0,1,3]
-theta2_values = [0,1,3]
-theta3_values = [0,1,3]
+#_________________________________________________________________________
+# 3.2 - Performs the grid-search
 
-for t0 in theta0_values:
-    for t1 in theta1_values:
-        for t2 in theta2_values:
-            for t3 in theta3_values:
-                    theta_combinations.append( (t0,t1,t2,t3) )
+#Choose the right values!! This search space might not be that relevant
+thetas = [np.linspace(0,2,6), # theta0
+          np.linspace(0,2,6), # theta1
+          np.linspace(0,2,6), # theta2
+          np.linspace(0,2,6)] # theta3
 
-likelihood_results = {}
-for combination in theta_combinations:
-    likelihood_results[combination], C, Cinv = gp_log_likelihood( X_train, T_train, theta[0], sigma, C = None, invC = None )
+theta_combinations = gen_theta_combinations(thetas)
 
-print "sort-dictionary-thingy(...)"
-print "plot-results-KAREN :P:P(...)"
+likelihood_results = []
+for theta_combination in theta_combinations:
+    likelihood_result, C, Cinv = gp_log_likelihood( X_train, T_train, theta_combination, sigma, C = None, invC = None )
+    likelihood_results.append( (likelihood_result,theta_combination) )
+    
+likelihood_results = sorted(likelihood_results, key=lambda likelihood_result: likelihood_result[0])
+
+def print_log_likelihood_result (result): 
+    print "Log-Likelihood:",result[0], "   Thetas:", result[1]
+
+# This is usually very big but it is asked.
+for r in likelihood_results:
+    print_log_likelihood_result(r)
+
+print "Grid-search Best result:"
+print_log_likelihood_result(likelihood_results[-1])
+print "Grid-search Worst result:"
+print_log_likelihood_result(likelihood_results[0])
+
+print "plot-best-and-worst-results-KAREN :P:P(...)"
+
+#_________________________________________________________________________
+
 
 
 

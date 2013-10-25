@@ -59,6 +59,11 @@ def computeK(X, thetas):
 
     return K
 
+def computeC(K,sigma):
+    """ Computes the matrix C. """
+    # C = K + I_N / beta = K + sigma * I_N  
+    return K + sigma * np.identity(K.shape[0])
+
 def show_sample_kernels(N_test, X_test, mu_test, thetaset):
     """ Still need to make the plot in a grid and then you can make thetaset choice disappear"""
     
@@ -89,7 +94,7 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None)
     
     if not C:
         K = computeK(X_train, theta)
-        C = K + sigma * np.identity(N_train) # C = K + I_N / beta = K + sigma * I_N   
+        C = computeC(K, sigma)
     Cinv = np.linalg.inv(C)
     
     # For each of the test points we calculate C_{N+1} and parameters mu & var.
@@ -109,7 +114,7 @@ def gp_log_likelihood( X_train, T_train, theta, sigma, C = None, invC = None ):
     N_train = X_train.shape[0]
     if not C:
         K = computeK(X_train, theta)
-        C = K + sigma * np.identity(N_train)
+        C = computeC(K, sigma)
     if not invC:
         Cinv=np.linalg.inv(C)
 
@@ -138,3 +143,16 @@ def gp_plot( x_test, y_test, mu_test, var_test, x_train, t_train, theta, beta ):
     pp.plot( x_train, t_train, 'ro', ms=10 )
 
 #_________________________________________________________________________
+
+
+
+def gen_theta_combinations(thetas):
+    """ Generates all the combinations of thetas from a configuration list (search space). """
+    theta_combinations = [] 
+    for t0 in thetas[0]:
+        for t1 in thetas[1]:
+            for t2 in thetas[2]:
+                for t3 in thetas[3]:
+                        theta_combinations.append( (t0,t1,t2,t3) )
+    
+    return theta_combinations
