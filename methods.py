@@ -89,9 +89,7 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None)
     
     if not C:
         K = computeK(X_train, theta)
-        # C = K + I_N / beta        
-        C = K + sigma * np.identity(N_train)  # beta = 1/sigma
-        
+        C = K + sigma * np.identity(N_train) # C = K + I_N / beta = K + sigma * I_N   
     Cinv = np.linalg.inv(C)
     
     # For each of the test points we calculate C_{N+1} and parameters mu & var.
