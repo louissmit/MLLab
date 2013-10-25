@@ -33,7 +33,7 @@ show_sample_kernels(N_test, X_test, mu, 0)
 
   
 K = computeK(X_train, theta[0])
-C = K + 0.01 * np.identity(N_train) 
+C = K + sigma * np.identity(N_train) 
 Cinv=np.linalg.inv(C)
 
 theta_combinations = []
