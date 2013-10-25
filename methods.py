@@ -107,12 +107,12 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None)
     return mu, var
 
 def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
-    D, N_train = X_train.shape
+    N_train = X_train.shape[0]
     if not C:
         K = computeK(X_train, theta)
         C = K + 0.01 * np.identity(N_train) #sigma?
     if not invC:
-        Cinv=np.inverse(C)
+        Cinv=np.linalg.inv(C)
 
     logLikelihood=-0.5*log(det(C))-0.5*np.dot(np.dot(T_train.T,Cinv),t)-N_train/2*log(2*pi)# possible errors: det()=determinate, log(), pi
     return logLikelihood
