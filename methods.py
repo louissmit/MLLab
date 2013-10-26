@@ -17,7 +17,7 @@ def data_gen(N_train,N_test,sigma=None):
     x_true = np.linspace(-1,1,50)
     y_true = true_mean_function(x_true)
 
-    return X_train, T_train,x_true, y_true, X_test
+    return X_train, T_train, x_true, y_true, X_test
 
 def true_mean_function( x ):
     return np.sin( pi*x )
@@ -137,19 +137,17 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
 def print_log_likelihood_result (result): 
     print "Log-Likelihood:",result[0], "   Thetas:", result[1]
 
-def grid_search(X_train, T_train):
-    #Choose the right values!! This search space might not be that relevant
-    theta_combinations = [np.linspace(0,2,6), # theta0
-              np.linspace(0,2,6), # theta1
-              np.linspace(0,2,6), # theta2
-              np.linspace(0,2,6)] # theta3
+def grid_search(X_train, T_train, sigma, theta_search_space):
+    """ Performs a grid search on the theta-space. The theta-search-space must be a list of lists of the form:
+    [[theta0-search-elements], [theta1-search-elements], [theta2-search-elements], [theta3-search-elements]].
+    """ 
 
-    
-    sigma=0.1
+    theta_combinations = gen_theta_combinations(theta_search_space)
+
     likelihood_results = []
-    for theta_combination in theta_combinations:
-        likelihood_result, C, Cinv = gp_log_likelihood( X_train, T_train, theta_combination)
-        likelihood_results.append( (likelihood_result,theta_combination) )
+    for thetas in theta_combinations:
+        likelihood_result, C, Cinv = gp_log_likelihood( X_train, T_train, thetas)
+        likelihood_results.append( (likelihood_result,thetas) )
         
     likelihood_results = sorted(likelihood_results, key=lambda likelihood_result: likelihood_result[0])
 
