@@ -167,6 +167,17 @@ def gen_theta_combinations(thetas):
 def grid_search(X_train, T_train, sigma, theta_search_space):
     """ Performs a grid search on the theta-space. The theta-search-space must be a list of lists of the form:
     [[theta0-search-elements], [theta1-search-elements], [theta2-search-elements], [theta3-search-elements]].
+    
+    Returns the best and the worst results:
+    (best, worst)
+    
+    Note that each of these is in the form:     (likelihood, (theta0, theta1, theta2, theta3))
+    
+    So if you want to use the theta values from the best result you would do:
+    
+    best, worst = grid_search(...)
+    best_likelihood = best[0]
+    best_thetas = best[1]
     """ 
     
     print " --------------------- Grid-search --------------------- "
