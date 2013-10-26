@@ -58,14 +58,13 @@ def show_sample_kernels(X_test):
     N_test=len(X_test)
     zero_mean=np.zeros((N_test,))
 
-    # pp.figure()
-    pp.subplots(2,3)
+    pp.figure(figsize=(12, 7))
     for i in xrange(len(THETAS)):
+        pp.subplot(2,3,i+1)
         pp.title(r'$\theta$ ='+str(THETAS[i]))
         K=computeK(X_test, THETAS[i])
         y_test = np.random.multivariate_normal(zero_mean,K)
         print i
-        pp.subplot(2,2,i+1)
         pp.plot(X_test,np.zeros(X_test.shape),'b--',label='expected mean')
         pp.plot(X_test,y_test,'r', label='GPP')
         pp.fill_between(X_test,y_test-2*np.diag(K)[1],y_test+2*np.diag(K)[1], alpha=0.15,facecolor='red')
