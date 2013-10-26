@@ -41,34 +41,35 @@ Cinv=np.linalg.inv(C)
 #_________________________________________________________________________
 # 3.2 - Performs the grid-search
 
-#Choose the right values!! This search space might not be that relevant
-thetas = [np.linspace(0,2,6), # theta0
-          np.linspace(0,2,6), # theta1
-          np.linspace(0,2,6), # theta2
-          np.linspace(0,2,6)] # theta3
-
-theta_combinations = gen_theta_combinations(thetas)
-
-likelihood_results = []
-for theta_combination in theta_combinations:
-    likelihood_result, C, Cinv = gp_log_likelihood( X_train, T_train, theta_combination, sigma, C = None, invC = None )
-    likelihood_results.append( (likelihood_result,theta_combination) )
-    
-likelihood_results = sorted(likelihood_results, key=lambda likelihood_result: likelihood_result[0])
-
 def print_log_likelihood_result (result): 
     print "Log-Likelihood:",result[0], "   Thetas:", result[1]
 
-# This is usually very big but it is asked.
-for r in likelihood_results:
-    print_log_likelihood_result(r)
+ def grid_search(X_train, T_train):   
+	#Choose the right values!! This search space might not be that relevant
+	thetas = [np.linspace(0,2,6), # theta0
+	          np.linspace(0,2,6), # theta1
+	          np.linspace(0,2,6), # theta2
+	          np.linspace(0,2,6)] # theta3
 
-print "Grid-search Best result:"
-print_log_likelihood_result(likelihood_results[-1])
-print "Grid-search Worst result:"
-print_log_likelihood_result(likelihood_results[0])
+	theta_combinations = gen_theta_combinations(thetas)
+	sigma=0.1
+	likelihood_results = []
+	for theta_combination in theta_combinations:
+	    likelihood_result, C, Cinv = gp_log_likelihood( X_train, T_train, theta_combination, sigma, C = None, invC = None )
+	    likelihood_results.append( (likelihood_result,theta_combination) )
+	    
+	likelihood_results = sorted(likelihood_results, key=lambda likelihood_result: likelihood_result[0])
 
-print "plot-best-and-worst-results-KAREN :P:P(...)"
+	# This is usually very big but it is asked.
+	for r in likelihood_results:
+	    print_log_likelihood_result(r)
+
+	print "Grid-search Best result:"
+	print_log_likelihood_result(likelihood_results[-1])
+	print "Grid-search Worst result:"
+	print_log_likelihood_result(likelihood_results[0])
+
+	print "plot-best-and-worst-results-KAREN :P:P(...)"
 
 #_________________________________________________________________________
 
