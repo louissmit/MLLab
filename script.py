@@ -9,7 +9,7 @@ from methods import *
 THETAS = np.array([[1,4,0,0], [9,4,0,0], [1,64,0,0], [1,0.25,0,0], [1,4,10,0], [1,4,0,5]])
 
 
-N_train = 2
+N_train = 5
 N_test = 100
 sigma=0.1
 X_train, T_train, x_true, y_true, X_test = data_gen(N_train, N_test, sigma)
@@ -40,9 +40,10 @@ X_train, T_train, x_true, y_true, X_test = data_gen(N_train, N_test, sigma)
 #_________________________________________________________________________
 # 3.2 - Performs the grid-search
 
+s = np.linspace(0,10,2)
+theta_search_space = [s, np.linspace(0,20,21), s, s]
+best, worst = grid_search(X_train, T_train, sigma, theta_search_space)
 
-theta_search_space = [np.linspace(0,2,6), np.linspace(0,2,6), np.linspace(0,2,6), np.linspace(0,2,6)]
-grid_search(X_train, T_train, sigma, theta_search_space)
 
 
 #_________________________________________________________________________

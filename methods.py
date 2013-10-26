@@ -134,8 +134,24 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
 
 # 3.2 - Performs the grid-search
 
+
+def similar(a,b, epsilon=0.0000001):
+    """ Returns 1 if both numbers are the same numerically at under an epsilon distance. """
+    if abs(a-b) < epsilon:
+        return 1
+    return 0
+
+def grid_search_validation(search_space, search):
+    """ Prints a warning in case any of the parameters is on the limit of the search space. """
+    print ""
+    for i in xrange(len(search)):
+        if similar(search[i],max(search_space[i])):  
+            print "The parameter {} (with value {}) equals the maximum of it's search space in the grid-search!!".format(i,search[i])
+        #if similar(search[i],min(search_space[i])):
+        #    print "The parameter {} (with value {}) equals the minimum of it's search space in the grid-search.".format(i,search[i])
+
 def print_log_likelihood_result (result): 
-    print "Log-Likelihood:",result[0], "   Thetas:", result[1]
+    print " Log-Likelihood:",result[0], "   Thetas:", result[1]
 
 def gen_theta_combinations(thetas):
     """ Generates all the combinations of thetas from a configuration list (search space). """
@@ -152,6 +168,8 @@ def grid_search(X_train, T_train, sigma, theta_search_space):
     """ Performs a grid search on the theta-space. The theta-search-space must be a list of lists of the form:
     [[theta0-search-elements], [theta1-search-elements], [theta2-search-elements], [theta3-search-elements]].
     """ 
+    
+    print " --------------------- Grid-search --------------------- "
 
     theta_combinations = gen_theta_combinations(theta_search_space)
 
@@ -163,15 +181,30 @@ def grid_search(X_train, T_train, sigma, theta_search_space):
     likelihood_results = sorted(likelihood_results, key=lambda likelihood_result: likelihood_result[0])
 
     # This is usually very big but it is asked.
-    for r in likelihood_results:
-        print_log_likelihood_result(r)
+    l = len(likelihood_results)
+    if l > 20:
+        i = 0
+        while i < 15:
+            print_log_likelihood_result(likelihood_results[i])
+            i += 1
+        print " ... the full output would be too large, truncating ... "
+        i = l - 15
+        while i < l:
+            print_log_likelihood_result(likelihood_results[i])
+            i += 1
 
-    print "Grid-search Best result:"
+    
+    print "\nGrid-search Best result:"
     print_log_likelihood_result(likelihood_results[-1])
     print "Grid-search Worst result:"
     print_log_likelihood_result(likelihood_results[0])
+    
+    # Issues warnings if we are at the upper boundary of the search space in any variable 
+    grid_search_validation(theta_search_space, likelihood_results[-1][1])    
+    
+    return (likelihood_results[-1], likelihood_results[0])
 
-    print "plot-best-and-worst-results-KAREN :P:P(...)"
+
 
 # 3.7 Bonus
 
