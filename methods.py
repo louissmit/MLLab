@@ -137,6 +137,17 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
 def print_log_likelihood_result (result): 
     print "Log-Likelihood:",result[0], "   Thetas:", result[1]
 
+def gen_theta_combinations(thetas):
+    """ Generates all the combinations of thetas from a configuration list (search space). """
+    theta_combinations = [] 
+    for t0 in thetas[0]:
+        for t1 in thetas[1]:
+            for t2 in thetas[2]:
+                for t3 in thetas[3]:
+                        theta_combinations.append( (t0,t1,t2,t3) )
+    
+    return theta_combinations
+
 def grid_search(X_train, T_train, sigma, theta_search_space):
     """ Performs a grid search on the theta-space. The theta-search-space must be a list of lists of the form:
     [[theta0-search-elements], [theta1-search-elements], [theta2-search-elements], [theta3-search-elements]].
