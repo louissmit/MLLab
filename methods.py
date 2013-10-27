@@ -62,10 +62,9 @@ def show_sample_kernels(X_test, THETAS):
         pp.subplot(2,3,i+1)
         pp.title(r'$\theta$ ='+str(THETAS[i]))
         pp.plot(X_test,np.zeros(X_test.shape),'b--',label='mean')
-        for x in xrange(5):
-            K=computeK(X_test, THETAS[i])
-            y_test = np.random.multivariate_normal(zero_mean,K)
-            pp.plot(X_test,y_test,'r')
+        K=computeK(X_test, THETAS[i])
+        y_test = np.random.multivariate_normal(zero_mean,K)
+        pp.plot(X_test,y_test,'r', label='GP')
         pp.fill_between(X_test,y_test-2*np.diag(K)[1],y_test+2*np.diag(K)[1], alpha=0.15,facecolor='red')
         pp.legend()
 
@@ -230,22 +229,25 @@ def grad_lnp(thetas, X_train, T_train,Cinv):
     # Theta_0
     for n in xrange(N_train):
         for m in xrange(N_train):
-            gradC[n,m]= np.exp(-thetas[1]/2.0 * abs2(X_train[n]-X_train[m]))*np.exp(thetas[0])
-    grad_lnp[0]=-0.5 *np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv),gradC),T_train)
+            gradC[n,m]= np.exp((-np.log(thetas[1])/2.0) * abs2(X_train[n]-X_train[m])) * thetas[0]
+    grad_lnp[0]=-0.5 *np.trace(np.dot(Cinv, gradC)) + 0.5 * np.dot(np.dot(np.dot(T_train.T, Cinv), gradC), T_train)
     # Theta_1
     for n in xrange(N_train):
         for m in xrange(N_train):
-            gradC[n,m]= np.exp(-thetas[1]/2.0 * abs2(X_train[n]-X_train[m]))*-thetas[0]/2.0 * abs2(X_train[n]-X_train[m])*np.exp(thetas[1])
+            norm = abs2(X_train[n]-X_train[m])
+            first_term =(-np.log(thetas[0])/2.0) * norm 
+            second_term = np.exp((-np.log(thetas[1])/2.0) * norm)
+            gradC[n,m] = first_term *  second_term  * thetas[1]
     grad_lnp[1]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv),gradC),T_train)
     # Theta_2
     for n in xrange(N_train):
         for m in xrange(N_train):
-            gradC[n,m]= np.exp(thetas[2])
+            gradC[n,m]= thetas[2]
     grad_lnp[2]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv),gradC),T_train)
     # Theta_3
     for n in xrange(N_train):
         for m in xrange(N_train):
-            gradC[n,m]= X_train[n]*X_train[m]*np.exp(thetas[3])
+            gradC[n,m]= X_train[n]*X_train[m]*thetas[3]
     grad_lnp[3]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv),gradC),T_train)
     
     return grad_lnp
