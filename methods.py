@@ -6,9 +6,7 @@ import matplotlib.pyplot as pp
 
 #_________________________________________________________________________
 # Data Generator
-def data_gen(N_train,N_test,sigma=None):
-    if not sigma:
-        sigma = 0.1
+def data_gen(N_train,N_test,sigma):
     beta  = 1.0 / pow(sigma,2) # this is the beta used in Bishop Eqn. 6.59
     X_test = np.random.uniform(-1,1,N_test)
     X_test=  np.sort(X_test)
@@ -48,8 +46,9 @@ def computeK(X, thetas):
 
     return K
 
-def computeC(K, sigma):
-    return K + sigma*sigma * np.identity(K.shape[0])
+def computeC(K, sigma2):
+    """ K is the kernel and sigma2 is sigma*sigma. """
+    return K + sigma2 * np.identity(K.shape[0])
 
 def show_sample_kernels(X_test, THETAS):
     N_test=len(X_test)
@@ -74,7 +73,7 @@ def show_sample_kernels(X_test, THETAS):
 #_________________________________________________________________________
 # Predictive distribution
 
-def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None):
+def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma2, C = None):
     N_train = len(X_train)
     N_test  = len(X_test)
     mu  = np.zeros(N_test)
@@ -82,31 +81,31 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None)
     if not C:
         K = computeK(X_train, theta)
         #C = K + 0.01 * np.identity(N_train) #sigma
-        C = computeC(K, sigma)
+        C = computeC(K, sigma2)
     Cinv=np.linalg.inv(C)
     
     k = np.empty(N_train)
     for n in xrange(N_test):
-        c = k_n_m(X_test[n], X_test[n],theta) + sigma*sigma    
+        c = k_n_m(X_test[n], X_test[n],theta) + sigma2   
         for i in xrange(N_train):
             k[i] = k_n_m(X_test[n], X_train[i],theta)
         mu[n] = np.dot(np.dot(k.T, Cinv), T_train)
         var[n] = c - np.dot(np.dot(k.T, Cinv), k)
     return mu, var
 
-def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
+def gp_log_likelihood( X_train, T_train, theta, sigma2, C = None, invC = None ):
     N_train = len(X_train)
     if not C:
         K = computeK(X_train, theta)
         #C = K + 0.01 * np.identity(N_train) #sigma
-         C = computeC(K, sigma)
+        C = computeC(K, sigma2)
     if not invC:
         Cinv=np.linalg.inv(C)
 
-    logLikelihood=-0.5 *np.log(np.linalg.det(C))-0.5*np.dot(np.dot(T_train.T,Cinv),T_train)-N_train/2*np.log(2*pi)# possible errors: det()=determinate, log(), pi
+    logLikelihood=-0.5 * (np.log(np.linalg.det(C)) + np.dot(np.dot(T_train.T,Cinv),T_train) + N_train*np.log(2*pi) )
     return logLikelihood, C, Cinv
 
-def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS, sigma):
+def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS, sigma2):
     
     N_test=len(X_test)
 
@@ -115,7 +114,7 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS, sigma):
         pp.subplot(2,3,i+1)
 
         pp.title(r'$\theta$='+str(THETAS[i]))
-        mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i], sigma)
+        mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i], sigma2)
         
         # separate model and data stddevs.
         std_total = np.sqrt(var)                       # includes all uncertainty, model and target noise 
@@ -131,6 +130,8 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS, sigma):
         pp.ylim(-2,2)
         pp.xlim(-1,1)
         pp.legend(loc=4)
+        
+
 #_________________________________________________________________________
 # Learning the hyperparameters
 
@@ -167,7 +168,7 @@ def gen_theta_combinations(thetas):
     
     return theta_combinations
 
-def grid_search(X_train, T_train, sigma, theta_search_space):
+def grid_search(X_train, T_train, sigma2, theta_search_space):
     """ Performs a grid search on the theta-space. The theta-search-space must be a list of lists of the form:
     [[theta0-search-elements], [theta1-search-elements], [theta2-search-elements], [theta3-search-elements]].
     
@@ -189,7 +190,7 @@ def grid_search(X_train, T_train, sigma, theta_search_space):
 
     likelihood_results = []
     for thetas in theta_combinations:
-        likelihood_result, C, Cinv = gp_log_likelihood( X_train, T_train, thetas)
+        likelihood_result, C, Cinv = gp_log_likelihood( X_train, T_train, thetas, sigma2)
         likelihood_results.append( (likelihood_result,thetas) )
         
     likelihood_results = sorted(likelihood_results, key=lambda likelihood_result: likelihood_result[0])
@@ -233,7 +234,7 @@ def grad_lnp(thetas, X_train, T_train,Cinv):
     # Theta_0
     for n in xrange(N_train):
         for m in xrange(N_train):
-            gradC[n,m]= np.exp((-np.log(thetas[1])/2.0) * abs2(X_train[n]-X_train[m])) * thetas[0]
+            gradC[n,m]= np.exp((-0.5*np.log(thetas[1])) * abs2(X_train[n]-X_train[m])) * thetas[0]
     #grad_lnp[0]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
     grad_lnp[0] = grad_lnp_function(Cinv, gradC, T_train)
    
@@ -241,8 +242,8 @@ def grad_lnp(thetas, X_train, T_train,Cinv):
     for n in xrange(N_train):
         for m in xrange(N_train):
             norm = abs2(X_train[n]-X_train[m])
-            first_term =(-np.log(thetas[0])/2.0) * norm 
-            second_term = np.exp((-np.log(thetas[1])/2.0) * norm)
+            first_term =(-0.5*np.log(thetas[0])) * norm 
+            second_term = np.exp(-0.5*np.log(thetas[1]) * norm)
             gradC[n,m] = first_term *  second_term  * thetas[1]
     #grad_lnp[1]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
     grad_lnp[1] = grad_lnp_function(Cinv, gradC, T_train)
