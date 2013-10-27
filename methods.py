@@ -53,20 +53,22 @@ def computeK(X, thetas):
 
     return K
 
-def show_sample_kernels(X_test):
-    THETAS = np.array([[1,4,0,0], [9,4,0,0], [1,64,0,0], [1,0.25,0,0], [1,4,10,0], [1,4,0,5]])
+def show_sample_kernels(X_test, THETAS):
     N_test=len(X_test)
     zero_mean=np.zeros((N_test,))
 
-
-    for i in xrange(1):#xrange(len(THETAS)):
-        pp.title('theta='+str(THETAS[i]))
-        K=computeK(X_test, THETAS[i])
-        y_test = np.random.multivariate_normal(zero_mean,K)
-        pp.plot(X_test,np.zeros(X_test.shape),'b--',label='expected mean')
-        pp.plot(X_test,y_test,'r', label='GPP')
+    pp.figure(figsize=(16, 8))
+    for i in xrange(len(THETAS)):
+        pp.subplot(2,3,i+1)
+        pp.title(r'$\theta$ ='+str(THETAS[i]))
+        pp.plot(X_test,np.zeros(X_test.shape),'b--',label='mean')
+        for x in xrange(5):
+            K=computeK(X_test, THETAS[i])
+            y_test = np.random.multivariate_normal(zero_mean,K)
+            pp.plot(X_test,y_test,'r')
         pp.fill_between(X_test,y_test-2*np.diag(K)[1],y_test+2*np.diag(K)[1], alpha=0.15,facecolor='red')
         pp.legend()
+
 
 #_________________________________________________________________________
 # Predictive distribution
@@ -101,14 +103,15 @@ def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
     logLikelihood=-0.5 *np.log(np.linalg.det(C))-0.5*np.dot(np.dot(T_train.T,Cinv),T_train)-N_train/2*np.log(2*pi)# possible errors: det()=determinate, log(), pi
     return logLikelihood, C, Cinv
 
-
 def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
-    
     
     N_test=len(X_test)
 
-    for i in xrange(1):#xrange(len(THETAS)):
-        pp.title('theta='+str(THETAS[i]))
+    pp.figure(figsize=(16, 8))
+    for i in xrange(len(THETAS)):
+        pp.subplot(2,3,i+1)
+
+        pp.title(r'$\theta$='+str(THETAS[i]))
         mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i])
         
         # separate model and data stddevs.
@@ -124,7 +127,7 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
         #pp.fill_between(X_test,mu-2*std_model,mu+2*std_model, alpha=0.15,facecolor='blue')
         pp.ylim(-2,2)
         pp.xlim(-1,1)
-        pp.legend()
+        pp.legend(loc=4)
 #_________________________________________________________________________
 # Learning the hyperparameters
 
