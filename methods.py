@@ -103,31 +103,61 @@ def gp_log_likelihood( X_train, T_train, theta, sigma2, C = None, invC = None ):
     logLikelihood=-0.5 * (np.log(np.linalg.det(C)) + np.dot(np.dot(T_train.T,Cinv),T_train) + N_train*np.log(2*pi) )
     return logLikelihood, C, Cinv
 
+def gp_single_plot(X_train, T_train,X_true, Y_true, X_test, beta, thetas, sigma2):
+    
+    N_test=X_test.shape[0]
+
+
+    pp.title(r'$\theta$='+str(thetas))
+    mu, var= gp_predictive_distribution(X_train, T_train, X_test, thetas, sigma2)
+    
+    # separate model and data stddevs.
+    #std_total = np.sqrt(var)                       # includes all uncertainty, model and target noise 
+    #std_model = np.sqrt( std_total**2 - 1.0/beta ) # remove data noise to get model uncertainty in stddev
+    #std_combo = std_model + np.sqrt( 1.0/beta )    # add stddev (note: not the same as full)
+
+    pp.plot(X_train, T_train,'bo', label='training set')
+    pp.plot(X_true,Y_true, label='generator')
+    pp.plot(X_test,mu,'r--',label='GP posterior')
+    pp.fill_between(X_test,mu-2*np.sqrt(var),mu+2*np.sqrt(var), alpha=0.15,facecolor='red')
+    #pp.fill_between(X_test,mu-2*std_combo,mu+2*std_combo, alpha=0.15,facecolor='red')
+    #pp.fill_between(X_test,mu-2*std_model,mu+2*std_model, alpha=0.15,facecolor='blue')
+    pp.ylim(-2,2)
+    pp.xlim(-1,1)
+    pp.legend(loc=4)
+
 def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS, sigma2):
     
     N_test=len(X_test)
 
-    pp.figure(figsize=(16, 8))
-    for i in xrange(len(THETAS)):
-        pp.subplot(2,3,i+1)
+    l = len(THETAS)
+    columns = 3
 
-        pp.title(r'$\theta$='+str(THETAS[i]))
-        mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i], sigma2)
+    pp.figure(figsize=(16, 8))
+    for i in xrange(l):
+        pp.subplot(l/columns + l%columns, columns, i+1)
+
+        gp_single_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS[i], sigma2)
+
+#        pp.title(r'$\theta$='+str(THETAS[i]))
+#        mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i], sigma2)
         
         # separate model and data stddevs.
-        std_total = np.sqrt(var)                       # includes all uncertainty, model and target noise 
-        std_model = np.sqrt( std_total**2 - 1.0/beta ) # remove data noise to get model uncertainty in stddev
-        std_combo = std_model + np.sqrt( 1.0/beta )    # add stddev (note: not the same as full)
+        #std_total = np.sqrt(var)                       # includes all uncertainty, model and target noise 
+        #std_model = np.sqrt( std_total**2 - 1.0/beta ) # remove data noise to get model uncertainty in stddev
+        #std_combo = std_model + np.sqrt( 1.0/beta )    # add stddev (note: not the same as full)
 
-        pp.plot(X_train, T_train,'bo', label='training set')
-        pp.plot(X_true,Y_true, label='generator')
-        pp.plot(X_test,mu,'r--',label='GP posterior')
-        pp.fill_between(X_test,mu-np.sqrt(var),mu+np.sqrt(var), alpha=0.15,facecolor='red')
-        #pp.fill_between(X_test,mu-2*std_combo,mu+2*std_combo, alpha=0.15,facecolor='red')
-        #pp.fill_between(X_test,mu-2*std_model,mu+2*std_model, alpha=0.15,facecolor='blue')
-        pp.ylim(-2,2)
-        pp.xlim(-1,1)
-        pp.legend(loc=4)
+#        pp.plot(X_train, T_train,'bo', label='training set')
+#        pp.plot(X_true,Y_true, label='generator')
+#        pp.plot(X_test,mu,'r--',label='GP posterior')
+#        pp.fill_between(X_test,mu-2*np.sqrt(var),mu+2*np.sqrt(var), alpha=0.15,facecolor='red')
+#        #pp.fill_between(X_test,mu-2*std_combo,mu+2*std_combo, alpha=0.15,facecolor='red')
+#        #pp.fill_between(X_test,mu-2*std_model,mu+2*std_model, alpha=0.15,facecolor='blue')
+#        pp.ylim(-2,2)
+#        pp.xlim(-1,1)
+#        pp.legend(loc=4)
+#        
+
         
 
 #_________________________________________________________________________
