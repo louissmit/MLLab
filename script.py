@@ -46,9 +46,9 @@ for i in xrange(iterations):
     thetas+= learning_rate*grad_lnp(thetas, X_train, T_train,Cinv)
     
     if (i % 10) == 0:
-        loglike.append(gp_log_likelihood( X_train, T_train, thetas)[0])
+        loglike.append(gp_log_likelihood( X_train, T_train, np.exp(thetas))[0])
     if (i % 200) == 0:
-        thetasToPlot.append(thetas)
+        thetasToPlot.append(np.exp(thetas))
 
 print 'ideal theta: '
 print np.exp(thetas)
