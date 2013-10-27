@@ -53,20 +53,19 @@ def computeK(X, thetas):
 
     return K
 
-def show_sample_kernels(X_test):
-    THETAS = np.array([[1,4,0,0], [9,4,0,0], [1,64,0,0], [1,0.25,0,0], [1,4,10,0], [1,4,0,5]])
+def show_sample_kernels(X_test, THETAS):
     N_test=len(X_test)
     zero_mean=np.zeros((N_test,))
 
-    pp.figure(figsize=(12, 7))
+    pp.figure(figsize=(14, 8))
     for i in xrange(len(THETAS)):
         pp.subplot(2,3,i+1)
         pp.title(r'$\theta$ ='+str(THETAS[i]))
-        K=computeK(X_test, THETAS[i])
-        y_test = np.random.multivariate_normal(zero_mean,K)
-        print i
-        pp.plot(X_test,np.zeros(X_test.shape),'b--',label='expected mean')
-        pp.plot(X_test,y_test,'r', label='GPP')
+        pp.plot(X_test,np.zeros(X_test.shape),'b--',label='mean')
+        for x in xrange(5):
+            K=computeK(X_test, THETAS[i])
+            y_test = np.random.multivariate_normal(zero_mean,K)
+            pp.plot(X_test,y_test,'r')
         pp.fill_between(X_test,y_test-2*np.diag(K)[1],y_test+2*np.diag(K)[1], alpha=0.15,facecolor='red')
         pp.legend()
 
@@ -107,10 +106,12 @@ def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
 
 def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
     
-    
     N_test=len(X_test)
 
-    for i in xrange(1):#xrange(len(THETAS)):
+    pp.figure(figsize=(14, 8))
+    for i in xrange(len(THETAS)):
+        pp.subplot(2,3,i+1)
+
         pp.title('theta='+str(THETAS[i]))
         mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i])
         
