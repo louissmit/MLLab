@@ -28,11 +28,6 @@ def add_noise( y, sigma ):
 def generate_t( x, sigma ):
     return add_noise( true_mean_function( x), sigma )
     
-
-
-#pp.plot( x_test, y_test, 'b-', lw=2)
-#pp.plot( x_test, t_test, 'go')
-
 #_________________________________________________________________________
 # Sampling from the Gaussian process prior
 
@@ -53,6 +48,9 @@ def computeK(X, thetas):
 
     return K
 
+def computeC(K, sigma):
+    return K + sigma*sigma * np.identity(K.shape[0])
+
 def show_sample_kernels(X_test, THETAS):
     N_test=len(X_test)
     zero_mean=np.zeros((N_test,))
@@ -63,28 +61,33 @@ def show_sample_kernels(X_test, THETAS):
         pp.title(r'$\theta$ ='+str(THETAS[i]))
         pp.plot(X_test,np.zeros(X_test.shape),'b--',label='mean')
         K=computeK(X_test, THETAS[i])
-        y_test = np.random.multivariate_normal(zero_mean,K)
-        pp.plot(X_test,y_test,'r', label='GP')
-        pp.fill_between(X_test,y_test-2*np.diag(K)[1],y_test+2*np.diag(K)[1], alpha=0.15,facecolor='red')
+        for l in xrange(5):
+            y_test = np.random.multivariate_normal(zero_mean,K)
+            if not l:
+                pp.plot(X_test,y_test,'r', label='GP')
+            else:
+                pp.plot(X_test,y_test,'r')
+            pp.fill_between(X_test,y_test-np.sqrt(np.diag(K)),y_test+np.sqrt(np.diag(K)), alpha=0.05,facecolor='red')
         pp.legend()
 
 
 #_________________________________________________________________________
 # Predictive distribution
 
-def gp_predictive_distribution(X_train, T_train, X_test, theta, C = None):
+def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma, C = None):
     N_train = len(X_train)
     N_test  = len(X_test)
     mu  = np.zeros(N_test)
     var = np.zeros(N_test)
     if not C:
         K = computeK(X_train, theta)
-        C = K + 0.01 * np.identity(N_train) #sigma
+        #C = K + 0.01 * np.identity(N_train) #sigma
+        C = computeC(K, sigma)
     Cinv=np.linalg.inv(C)
     
     k = np.empty(N_train)
     for n in xrange(N_test):
-        c = k_n_m(X_test[n], X_test[n],theta) + 0.01    
+        c = k_n_m(X_test[n], X_test[n],theta) + sigma*sigma    
         for i in xrange(N_train):
             k[i] = k_n_m(X_test[n], X_train[i],theta)
         mu[n] = np.dot(np.dot(k.T, Cinv), T_train)
@@ -95,14 +98,15 @@ def gp_log_likelihood( X_train, T_train, theta, C = None, invC = None ):
     N_train = len(X_train)
     if not C:
         K = computeK(X_train, theta)
-        C = K + 0.01 * np.identity(N_train) #sigma?
+        #C = K + 0.01 * np.identity(N_train) #sigma
+         C = computeC(K, sigma)
     if not invC:
         Cinv=np.linalg.inv(C)
 
     logLikelihood=-0.5 *np.log(np.linalg.det(C))-0.5*np.dot(np.dot(T_train.T,Cinv),T_train)-N_train/2*np.log(2*pi)# possible errors: det()=determinate, log(), pi
     return logLikelihood, C, Cinv
 
-def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
+def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS, sigma):
     
     N_test=len(X_test)
 
@@ -111,7 +115,7 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
         pp.subplot(2,3,i+1)
 
         pp.title(r'$\theta$='+str(THETAS[i]))
-        mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i])
+        mu, var= gp_predictive_distribution(X_train, T_train, X_test, THETAS[i], sigma)
         
         # separate model and data stddevs.
         std_total = np.sqrt(var)                       # includes all uncertainty, model and target noise 
@@ -130,9 +134,6 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS):
 #_________________________________________________________________________
 # Learning the hyperparameters
 
-#K = computeK(X_train, theta)
-#C = K + 0.01 * np.identity(N_train) 
-#Cinv=np.linalg.inv(C)
 
 # 3.2 - Performs the grid-search
 
@@ -193,7 +194,7 @@ def grid_search(X_train, T_train, sigma, theta_search_space):
         
     likelihood_results = sorted(likelihood_results, key=lambda likelihood_result: likelihood_result[0])
 
-    # This is usually very big but it is asked.
+    # This is usually very big but it is asked, so we truncate the printing.
     l = len(likelihood_results)
     if l > 20:
         i = 0
@@ -221,6 +222,9 @@ def grid_search(X_train, T_train, sigma, theta_search_space):
 
 # 3.7 Bonus
 
+def grad_lnp_function(Cinv, gradC, T_train): # Auxiliary function
+    return 0.5 * ( np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train) - np.trace(np.dot(Cinv,gradC))  )
+
 def grad_lnp(thetas, X_train, T_train,Cinv):
     grad_lnp=np.zeros((4,1))
     N_train=len(X_train)
@@ -230,7 +234,9 @@ def grad_lnp(thetas, X_train, T_train,Cinv):
     for n in xrange(N_train):
         for m in xrange(N_train):
             gradC[n,m]= np.exp((-np.log(thetas[1])/2.0) * abs2(X_train[n]-X_train[m])) * thetas[0]
-    grad_lnp[0]=-0.5 *np.trace(np.dot(Cinv, gradC)) + 0.5 * np.dot(np.dot(np.dot(T_train.T, Cinv), gradC), T_train)
+    #grad_lnp[0]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
+    grad_lnp[0] = grad_lnp_function(Cinv, gradC, T_train)
+   
     # Theta_1
     for n in xrange(N_train):
         for m in xrange(N_train):
@@ -238,17 +244,22 @@ def grad_lnp(thetas, X_train, T_train,Cinv):
             first_term =(-np.log(thetas[0])/2.0) * norm 
             second_term = np.exp((-np.log(thetas[1])/2.0) * norm)
             gradC[n,m] = first_term *  second_term  * thetas[1]
-    grad_lnp[1]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv),gradC),T_train)
+    #grad_lnp[1]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
+    grad_lnp[1] = grad_lnp_function(Cinv, gradC, T_train)
+   
     # Theta_2
     for n in xrange(N_train):
         for m in xrange(N_train):
             gradC[n,m]= thetas[2]
-    grad_lnp[2]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv),gradC),T_train)
+    #grad_lnp[2]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
+    grad_lnp[2] = grad_lnp_function(Cinv, gradC, T_train)
+   
     # Theta_3
     for n in xrange(N_train):
         for m in xrange(N_train):
             gradC[n,m]= X_train[n]*X_train[m]*thetas[3]
-    grad_lnp[3]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv),gradC),T_train)
+    #grad_lnp[3]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
+    grad_lnp[3] = grad_lnp_function(Cinv, gradC, T_train)
     
     return grad_lnp
 
