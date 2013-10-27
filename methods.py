@@ -80,7 +80,6 @@ def gp_predictive_distribution(X_train, T_train, X_test, theta, sigma2, C = None
     var = np.zeros(N_test)
     if not C:
         K = computeK(X_train, theta)
-        #C = K + 0.01 * np.identity(N_train) #sigma
         C = computeC(K, sigma2)
     Cinv=np.linalg.inv(C)
     
@@ -97,7 +96,6 @@ def gp_log_likelihood( X_train, T_train, theta, sigma2, C = None, invC = None ):
     N_train = len(X_train)
     if not C:
         K = computeK(X_train, theta)
-        #C = K + 0.01 * np.identity(N_train) #sigma
         C = computeC(K, sigma2)
     if not invC:
         Cinv=np.linalg.inv(C)
@@ -124,7 +122,7 @@ def gp_plot(X_train, T_train,X_true, Y_true, X_test, beta, THETAS, sigma2):
         pp.plot(X_train, T_train,'bo', label='training set')
         pp.plot(X_true,Y_true, label='generator')
         pp.plot(X_test,mu,'r--',label='GP posterior')
-        pp.fill_between(X_test,mu-2*np.sqrt(var),mu+2*np.sqrt(var), alpha=0.15,facecolor='red')
+        pp.fill_between(X_test,mu-np.sqrt(var),mu+np.sqrt(var), alpha=0.15,facecolor='red')
         #pp.fill_between(X_test,mu-2*std_combo,mu+2*std_combo, alpha=0.15,facecolor='red')
         #pp.fill_between(X_test,mu-2*std_model,mu+2*std_model, alpha=0.15,facecolor='blue')
         pp.ylim(-2,2)
@@ -151,9 +149,7 @@ def grid_search_validation(search_space, search):
     for i in xrange(len(search)):
         if similar(search[i],max(search_space[i])):  
             print "The parameter {} (with value {}) equals the maximum of it's search space in the grid-search!!".format(i,search[i])
-        #if similar(search[i],min(search_space[i])):
-        #    print "The parameter {} (with value {}) equals the minimum of it's search space in the grid-search.".format(i,search[i])
-
+        
 def print_log_likelihood_result (result): 
     print " Log-Likelihood:",result[0], "   Thetas:", result[1]
 
@@ -235,7 +231,6 @@ def grad_lnp(thetas, X_train, T_train,Cinv):
     for n in xrange(N_train):
         for m in xrange(N_train):
             gradC[n,m]= np.exp((-0.5*np.log(thetas[1])) * abs2(X_train[n]-X_train[m])) * thetas[0]
-    #grad_lnp[0]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
     grad_lnp[0] = grad_lnp_function(Cinv, gradC, T_train)
    
     # Theta_1
@@ -245,21 +240,18 @@ def grad_lnp(thetas, X_train, T_train,Cinv):
             first_term =(-0.5*np.log(thetas[0])) * norm 
             second_term = np.exp(-0.5*np.log(thetas[1]) * norm)
             gradC[n,m] = first_term *  second_term  * thetas[1]
-    #grad_lnp[1]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
     grad_lnp[1] = grad_lnp_function(Cinv, gradC, T_train)
    
     # Theta_2
     for n in xrange(N_train):
         for m in xrange(N_train):
             gradC[n,m]= thetas[2]
-    #grad_lnp[2]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
     grad_lnp[2] = grad_lnp_function(Cinv, gradC, T_train)
    
     # Theta_3
     for n in xrange(N_train):
         for m in xrange(N_train):
             gradC[n,m]= X_train[n]*X_train[m]*thetas[3]
-    #grad_lnp[3]=-0.5* np.trace(np.dot(Cinv,gradC))+0.5* np.dot(np.dot(np.dot(T_train.T,Cinv), gradC), T_train)
     grad_lnp[3] = grad_lnp_function(Cinv, gradC, T_train)
     
     return grad_lnp
